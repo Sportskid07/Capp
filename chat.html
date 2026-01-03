@@ -1,63 +1,111 @@
-import { db, auth } from "./firebase.js";
-import {
-  collection,
-  addDoc,
-  onSnapshot,
-  query,
-  orderBy
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { onAuthStateChanged } from
-  "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Private Chat</title>
 
-const messagesDiv = document.getElementById("messages");
-const input = document.getElementById("msgInput");
-const btn = document.getElementById("sendBtn");
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #ece5dd;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
 
-// 👇 replace with real UID of second user
-const OTHER_USER_UID = "PASTE_OTHER_USER_UID_HERE";
+    /* Header */
+    header {
+      background: #075e54;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+    }
 
-function getChatId(uid1, uid2) {
-  return [uid1, uid2].sort().join("_");
-}
+    /* Messages area */
+    #messages {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      background: #efeae2;
+    }
 
-onAuthStateChanged(auth, user => {
-  if (!user) return;
+    .msg {
+      max-width: 60%;
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 8px;
+      clear: both;
+      font-size: 14px;
+    }
 
-  const myUid = user.uid;
-  const chatId = getChatId(myUid, OTHER_USER_UID);
+    .me {
+      background: #dcf8c6;
+      float: right;
+      text-align: right;
+    }
 
-  const msgsRef = collection(db, "chats", chatId, "messages");
-  const q = query(msgsRef, orderBy("time"));
+    .other {
+      background: white;
+      float: left;
+      text-align: left;
+    }
 
-  // LISTEN FOR MESSAGES
-  onSnapshot(q, snapshot => {
-    messagesDiv.innerHTML = "";
-    snapshot.forEach(doc => {
-      const data = doc.data();
-      const p = document.createElement("p");
+    /* Input area */
+    footer {
+      display: flex;
+      padding: 10px;
+      background: #f0f0f0;
+    }
 
-      p.textContent = data.text;
-      p.style.textAlign = data.from === myUid ? "right" : "left";
+    footer input {
+      flex: 1;
+      padding: 10px;
+      font-size: 14px;
+      border: none;
+      border-radius: 4px;
+      outline: none;
+    }
 
-      messagesDiv.appendChild(p);
-    });
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-  });
+    footer button {
+      margin-left: 10px;
+      padding: 10px 20px;
+      background: #075e54;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
 
-  // SEND MESSAGE
-  btn.addEventListener("click", async () => {
-    if (input.value.trim() === "") return;
+    footer button:hover {
+      background: #064c44;
+    }
+  </style>
+</head>
 
-    await addDoc(msgsRef, {
-      text: input.value,
-      from: myUid,
-      to: OTHER_USER_UID,
-      time: Date.now()
-    });
+<body>
 
-    input.value = "";
-  });
-});
+  <!-- CHAT HEADER -->
+  <header>
+    Private Chat
+  </header>
+
+  <!-- MESSAGES -->
+  <div id="messages"></div>
+
+  <!-- INPUT -->
+  <footer>
+    <input type="text" id="msgInput" placeholder="Type a message">
+    <button id="sendBtn">Send</button>
+  </footer>
+
+  <!-- CHAT LOGIC -->
+  <script type="module" src="./js/chat.js"></script>
+
+</body>
+</html>
 
 
 
