@@ -1,19 +1,63 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Chat</title>
-  <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
+import { db, auth } from "./firebase.js";
+import {
+  collection,
+  addDoc,
+  onSnapshot,
+  query,
+  orderBy
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { onAuthStateChanged } from
+  "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-<h2>Chat</h2>
+const messagesDiv = document.getElementById("messages");
+const input = document.getElementById("msgInput");
+const btn = document.getElementById("sendBtn");
 
-<div id="messages" style="height:300px; overflow-y:auto; border:1px solid #ccc; padding:10px;"></div>
+// 👇 replace with real UID of second user
+const OTHER_USER_UID = "PASTE_OTHER_USER_UID_HERE";
 
-<input type="text" id="msgInput" placeholder="Type a message">
-<button id="sendBtn">Send</button>
+function getChatId(uid1, uid2) {
+  return [uid1, uid2].sort().join("_");
+}
 
-<script type="module" src="./js/chat.js"></script>
-</body>
-</html>
+onAuthStateChanged(auth, user => {
+  if (!user) return;
+
+  const myUid = user.uid;
+  const chatId = getChatId(myUid, OTHER_USER_UID);
+
+  const msgsRef = collection(db, "chats", chatId, "messages");
+  const q = query(msgsRef, orderBy("time"));
+
+  // LISTEN FOR MESSAGES
+  onSnapshot(q, snapshot => {
+    messagesDiv.innerHTML = "";
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const p = document.createElement("p");
+
+      p.textContent = data.text;
+      p.style.textAlign = data.from === myUid ? "right" : "left";
+
+      messagesDiv.appendChild(p);
+    });
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  });
+
+  // SEND MESSAGE
+  btn.addEventListener("click", async () => {
+    if (input.value.trim() === "") return;
+
+    await addDoc(msgsRef, {
+      text: input.value,
+      from: myUid,
+      to: OTHER_USER_UID,
+      time: Date.now()
+    });
+
+    input.value = "";
+  });
+});
+
+
 
