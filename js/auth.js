@@ -7,11 +7,8 @@ window.login = function () {
   const password = document.getElementById("password").value;
 
   signInWithEmailAndPassword(auth, email, password)
-    .then(() => {
-      window.location.href = "chat.html";
-    })
-    .catch(() => {
-      alert("Access denied");
-    });
+    .then(() => window.location.href = "chat.html")
+    .catch(err => alert(err.message));
 };
+
 
