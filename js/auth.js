@@ -2,7 +2,7 @@ console.log("auth.js loaded");
 
 import { signInWithEmailAndPassword } from 
   "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { auth } from "./firebase.js";
+import { auth } from "./js/firebase.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const btn = document.getElementById("loginBtn");
